@@ -1,3 +1,4 @@
+import Trie "mo:base/Trie";
 module {
   public type TAsset = {
     name : Text;
@@ -32,4 +33,6 @@ module {
 
   public type List<T> = ?(T, List<T>);
 
+  public type Trie<K, V> = Trie.Trie<K, V>;
+  public type Key<K> = Trie.Key<K>;
 };

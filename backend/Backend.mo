@@ -1,7 +1,14 @@
 import List "mo:base/List";
+import TrieMap "mo:base/TrieMap";
+import Nat "mo:base/Nat";
+import Hash "mo:base/Hash";
+import Iter "mo:base/Iter";
+import Trie "mo:base/Trie";
+import Text "mo:base/Text";
 import Types "./Types";
 
 shared (msg) actor class Backend() {
+  func key(t : Text) : Types.Key<Text> { { hash = Text.hash t; key = t } };
 
   stable var users : Types.List<Types.User> = List.nil();
 
@@ -31,7 +38,6 @@ shared (msg) actor class Backend() {
     _pincode : Text,
     _image : Text,
     _owner : Principal,
-
   ) {
     assert (owner == msg.caller);
 
@@ -46,6 +52,26 @@ shared (msg) actor class Backend() {
       comments = List.nil();
     };
     assets := List.push(asset, assets);
+  };
+
+  public shared (msg) func createComment(message : Text, assetId : Nat) {
+    let comment : Types.Comment = {
+      assetId;
+      message;
+      sender = msg.caller;
+      likes = 0;
+    };
+    let foundAsset = await findAssetById(assetId);
+    switch (foundAsset) {
+      case (?asset) {
+        let updatedComments = List.push(comment, asset.comments);
+      };
+      case (null) {};
+    };
+  };
+
+  public shared (msg) func findAssetById(assetId : Nat) : async ?Types.TAsset {
+    List.find<Types.TAsset>(assets, func(n : Types.TAsset) : Bool { n.id == assetId });
   };
 
   public query func getAssets() : async Types.List<Types.TAsset> {
